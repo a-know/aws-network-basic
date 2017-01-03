@@ -46,6 +46,14 @@
         "RouteTableId" : { "Ref" : "MyRouteTable" },
         "SubnetId" : { "Ref" : "MyPublicSubnet" }
       }
+    },
+    "MyRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "MyIGW" }
+      }
     }
   }
 }
