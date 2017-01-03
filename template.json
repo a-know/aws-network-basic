@@ -39,6 +39,13 @@
         "VpcId" : { "Ref" : "MyVPC" },
         "Tags" : [ { "Key" : "Name", "Value" : "パブリックルートテーブル" } ]
       }
+    },
+    "AttachPublicRouteTableToPublicSubnet" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyRouteTable" },
+        "SubnetId" : { "Ref" : "MyPublicSubnet" }
+      }
     }
   }
 }
