@@ -1,0 +1,59 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Resources" : {
+    "MyVPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : "10.0.0.0/16",
+        "EnableDnsSupport" : "true",
+        "EnableDnsHostnames" : "true",
+        "InstanceTenancy" : "default",
+        "Tags" : [ {"Key" : "Name", "Value" : "VPC領域"} ]
+      }
+    },
+    "MyPublicSubnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "CidrBlock" : "10.0.1.0/24",
+        "AvailabilityZone" : "ap-northeast-1c",
+        "Tags" : [ { "Key" : "Name", "Value" : "パブリックサブネット" } ]
+      }
+    },
+    "MyIGW" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [ {"Key" : "Name", "Value" : "インターネットゲートウェイ"}]
+      }
+    },
+    "AttachGateway" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "InternetGatewayId" : { "Ref" : "MyIGW" }
+      }
+    },
+    "MyRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "Tags" : [ { "Key" : "Name", "Value" : "パブリックルートテーブル" } ]
+      }
+    },
+    "AttachPublicRouteTableToPublicSubnet" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyRouteTable" },
+        "SubnetId" : { "Ref" : "MyPublicSubnet" }
+      }
+    },
+    "MyRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "MyIGW" }
+      }
+    }
+  }
+}
