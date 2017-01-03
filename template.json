@@ -32,6 +32,13 @@
         "VpcId" : { "Ref" : "MyVPC" },
         "InternetGatewayId" : { "Ref" : "MyIGW" }
       }
+    },
+    "MyRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "Tags" : [ { "Key" : "Name", "Value" : "パブリックルートテーブル" } ]
+      }
     }
   }
 }
