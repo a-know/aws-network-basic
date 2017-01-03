@@ -19,6 +19,19 @@
         "AvailabilityZone" : "ap-northeast-1c",
         "Tags" : [ { "Key" : "Name", "Value" : "パブリックサブネット" } ]
       }
+    },
+    "MyIGW" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+        "Tags" : [ {"Key" : "Name", "Value" : "インターネットゲートウェイ"}]
+      }
+    },
+    "AttachGateway" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "InternetGatewayId" : { "Ref" : "MyIGW" }
+      }
     }
   }
 }
