@@ -69,6 +69,41 @@
         "Tags" :  [ { "Key" : "Name", "Value" : "WEB-SG" } ],
         "VpcId" : { "Ref" : "MyVPC" }
       }
+    },
+    "MyPublicEC2Instance": {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-4985b048",
+        "InstanceType" : "t2.nano",
+        "KeyName" : "macbook12",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "Webサーバー" }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "DeleteOnTermination" : "true",
+            "PrivateIpAddress" : "10.0.1.10",
+            "SubnetId": { "Ref" : "MyPublicSubnet" },
+            "GroupSet": [ { "Ref" : "MyPublicSecurityGroup" } ]
+          }
+        ],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sda1",
+            "Ebs" : {
+               "VolumeType" : "standard",
+               "DeleteOnTermination" : "true",
+               "VolumeSize" : "8"
+            }
+          },
+          {
+            "DeviceName" : "/dev/sdk",
+            "NoDevice" : {}
+          }
+        ]
+      }
     }
   }
 }
