@@ -10,3 +10,4 @@
 ### Chapter.3 サーバーを構築する
 
 [Chapter 3 : サーバーを構築する (#2)](https://github.com/a-know/aws-network-basic/pull/2)
+[Webサーバにアタッチするデバイスの修正 (#3)](https://github.com/a-know/aws-network-basic/pull/3)
