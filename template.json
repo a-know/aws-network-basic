@@ -91,16 +91,12 @@
         ],
         "BlockDeviceMappings" : [
           {
-            "DeviceName" : "/dev/sda1",
+            "DeviceName" : "/dev/xvda",
             "Ebs" : {
                "VolumeType" : "standard",
                "DeleteOnTermination" : "true",
                "VolumeSize" : "8"
             }
-          },
-          {
-            "DeviceName" : "/dev/sdk",
-            "NoDevice" : {}
           }
         ]
       }
