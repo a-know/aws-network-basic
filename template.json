@@ -49,11 +49,25 @@
         "Tags" : [ { "Key" : "Name", "Value" : "パブリックルートテーブル" } ]
       }
     },
+    "MyPrivateRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "Tags" : [ { "Key" : "Name", "Value" : "プライベートルートテーブル" } ]
+      }
+    },
     "AttachPublicRouteTableToPublicSubnet" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
         "RouteTableId" : { "Ref" : "MyRouteTable" },
         "SubnetId" : { "Ref" : "MyPublicSubnet" }
+      }
+    },
+    "AttachPrivateRouteTableToPrivateSubnet" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyPrivateRouteTable" },
+        "SubnetId" : { "Ref" : "MyPrivateSubnet" }
       }
     },
     "MyRoute" : {
@@ -62,6 +76,14 @@
         "RouteTableId" : { "Ref" : "MyRouteTable" },
         "DestinationCidrBlock" : "0.0.0.0/0",
         "GatewayId" : { "Ref" : "MyIGW" }
+      }
+    },
+    "MyPrivateRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyPrivateRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "MyNatEC2Instance" }
       }
     },
     "MyPublicSecurityGroup": {
@@ -117,6 +139,48 @@
          }
         ],
         "Tags" :  [ { "Key" : "Name", "Value" : "DB-SG" } ],
+        "VpcId" : { "Ref" : "MyVPC" }
+      }
+    },
+    "MyNatSecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "SecurityGroup for nat-server instance in public-subnet",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : "10.0.1.10/32"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "10.0.2.0/24"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "10.0.2.0/24"
+          }
+        ],
+        "SecurityGroupEgress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ],
+        "Tags" :  [ { "Key" : "Name", "Value" : "NAT-SG" } ],
         "VpcId" : { "Ref" : "MyVPC" }
       }
     },
@@ -220,6 +284,38 @@
             "PrivateIpAddress" : "10.0.2.10",
             "SubnetId": { "Ref" : "MyPrivateSubnet" },
             "GroupSet": [ { "Ref" : "MyDatabaseSecurityGroup" } ]
+          }
+        ],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/xvda",
+            "Ebs" : {
+               "VolumeType" : "standard",
+               "DeleteOnTermination" : "true",
+               "VolumeSize" : "8"
+            }
+          }
+        ]
+      }
+    },
+    "MyNatEC2Instance": {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-2f0f6448",
+        "InstanceType" : "t2.nano",
+        "KeyName" : "macbook12",
+        "SourceDestCheck" : false,
+        "Tags" : [
+          { "Key" : "Name", "Value" : "NATサーバー" }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "DeleteOnTermination" : "true",
+            "PrivateIpAddress" : "10.0.1.20",
+            "SubnetId": { "Ref" : "MyPublicSubnet" },
+            "GroupSet": [ { "Ref" : "MyNatSecurityGroup" } ]
           }
         ],
         "BlockDeviceMappings" : [
