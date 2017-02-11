@@ -15,4 +15,13 @@
 
 ### Chapter.4 Web サーバーソフトをインストールする
 
-- [Chapter 4 : Web サーバーソフトをインストールする (#3)](https://github.com/a-know/aws-network-basic/pull/4)
+- [Chapter 4 : Web サーバーソフトをインストールする (#4)](https://github.com/a-know/aws-network-basic/pull/4)
+
+
+### Chapter.5 HTTP プロトコルの動きを確認する
+
+- CloudFormation用 json ファイルへの変更なし
+
+### Chapter.6 プライベートサブネットを構築する
+
+- [Chapter 6 : プライベートサブネットを構築する (#5)](https://github.com/a-know/aws-network-basic/pull/5)

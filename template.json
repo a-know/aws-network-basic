@@ -20,6 +20,15 @@
         "Tags" : [ { "Key" : "Name", "Value" : "パブリックサブネット" } ]
       }
     },
+    "MyPrivateSubnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "CidrBlock" : "10.0.2.0/24",
+        "AvailabilityZone" : "ap-northeast-1c",
+        "Tags" : [ { "Key" : "Name", "Value" : "プライベートサブネット" } ]
+      }
+    },
     "MyIGW" : {
       "Type" : "AWS::EC2::InternetGateway",
       "Properties" : {
@@ -61,6 +70,34 @@
         "GroupDescription" : "SecurityGroup for web-server instance in public-subnet",
         "SecurityGroupIngress" : [
           {
+             "IpProtocol" : "tcp",
+             "FromPort" : "22",
+             "ToPort" : "22",
+             "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "icmp",
+            "FromPort" : "-1",
+            "ToPort" : "-1",
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ],
+        "Tags" :  [ { "Key" : "Name", "Value" : "WEB-SG" } ],
+        "VpcId" : { "Ref" : "MyVPC" }
+      }
+    },
+    "MyDatabaseSecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "SecurityGroup for db-server instance in private-subnet",
+        "SecurityGroupIngress" : [
+          {
            "IpProtocol" : "tcp",
            "FromPort" : "22",
            "ToPort" : "22",
@@ -68,12 +105,18 @@
          },
          {
           "IpProtocol" : "tcp",
-          "FromPort" : "80",
-          "ToPort" : "80",
+          "FromPort" : "3306",
+          "ToPort" : "3306",
+          "CidrIp" : "0.0.0.0/0"
+         },
+         {
+          "IpProtocol" : "icmp",
+          "FromPort" : "-1",
+          "ToPort" : "-1",
           "CidrIp" : "0.0.0.0/0"
          }
         ],
-        "Tags" :  [ { "Key" : "Name", "Value" : "WEB-SG" } ],
+        "Tags" :  [ { "Key" : "Name", "Value" : "DB-SG" } ],
         "VpcId" : { "Ref" : "MyVPC" }
       }
     },
@@ -146,6 +189,37 @@
             "PrivateIpAddress" : "10.0.1.10",
             "SubnetId": { "Ref" : "MyPublicSubnet" },
             "GroupSet": [ { "Ref" : "MyPublicSecurityGroup" } ]
+          }
+        ],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/xvda",
+            "Ebs" : {
+               "VolumeType" : "standard",
+               "DeleteOnTermination" : "true",
+               "VolumeSize" : "8"
+            }
+          }
+        ]
+      }
+    },
+    "MyPrivateEC2Instance": {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-4985b048",
+        "InstanceType" : "t2.nano",
+        "KeyName" : "macbook12",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "DBサーバー" }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "false",
+            "DeviceIndex": "0",
+            "DeleteOnTermination" : "true",
+            "PrivateIpAddress" : "10.0.2.10",
+            "SubnetId": { "Ref" : "MyPrivateSubnet" },
+            "GroupSet": [ { "Ref" : "MyDatabaseSecurityGroup" } ]
           }
         ],
         "BlockDeviceMappings" : [
