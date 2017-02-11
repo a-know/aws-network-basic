@@ -275,6 +275,38 @@
           }
         ]
       }
+    },
+    "MyNatEC2Instance": {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-2f0f6448",
+        "InstanceType" : "t2.nano",
+        "KeyName" : "macbook12",
+        "SourceDestCheck" : false,
+        "Tags" : [
+          { "Key" : "Name", "Value" : "NATサーバー" }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "DeleteOnTermination" : "true",
+            "PrivateIpAddress" : "10.0.1.20",
+            "SubnetId": { "Ref" : "MyPublicSubnet" },
+            "GroupSet": [ { "Ref" : "MyNatSecurityGroup" } ]
+          }
+        ],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/xvda",
+            "Ebs" : {
+               "VolumeType" : "standard",
+               "DeleteOnTermination" : "true",
+               "VolumeSize" : "8"
+            }
+          }
+        ]
+      }
     }
   }
 }
