@@ -120,6 +120,48 @@
         "VpcId" : { "Ref" : "MyVPC" }
       }
     },
+    "MyNatSecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "SecurityGroup for nat-server instance in public-subnet",
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp" : "10.0.1.10/32"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "10.0.2.0/24"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "10.0.2.0/24"
+          }
+        ],
+        "SecurityGroupEgress" : [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp" : "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp" : "0.0.0.0/0"
+          }
+        ],
+        "Tags" :  [ { "Key" : "Name", "Value" : "NAT-SG" } ],
+        "VpcId" : { "Ref" : "MyVPC" }
+      }
+    },
     "MyPublicEC2Instance": {
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
