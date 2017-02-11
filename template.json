@@ -65,13 +65,47 @@
            "FromPort" : "22",
            "ToPort" : "22",
            "CidrIp" : "0.0.0.0/0"
-          } ],
+         },
+         {
+          "IpProtocol" : "tcp",
+          "FromPort" : "80",
+          "ToPort" : "80",
+          "CidrIp" : "0.0.0.0/0"
+         }
+        ],
         "Tags" :  [ { "Key" : "Name", "Value" : "WEB-SG" } ],
         "VpcId" : { "Ref" : "MyVPC" }
       }
     },
     "MyPublicEC2Instance": {
       "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "Comment1" : "Configure the bootstrap helpers to install the Apache Web Server",
+
+        "AWS::CloudFormation::Init" : {
+          "configSets" : {
+            "Install" : [ "Install" ]
+          },
+
+          "Install" : {
+            "packages" : {
+              "yum" : {
+                "httpd" : []
+              }
+            },
+            "services" : {
+              "sysvinit" : {
+                "httpd" : { "enabled" : "true", "ensureRunning" : "true" }
+              }
+            }
+          }
+        }
+      },
+      "CreationPolicy" : {
+        "ResourceSignal" : {
+          "Timeout" : "PT5M"
+        }
+      },
       "Properties" : {
         "ImageId" : "ami-4985b048",
         "InstanceType" : "t2.nano",
@@ -79,6 +113,31 @@
         "Tags" : [
           { "Key" : "Name", "Value" : "Webサーバー" }
         ],
+        "UserData" : {
+          "Fn::Base64" :
+            { "Fn::Join" :
+              [
+                "",
+                [
+                  "#!/bin/bash -xe\n",
+                  "yum install -y aws-cfn-bootstrap\n",
+                  "# Install the files and packages from the metadata\n",
+                  "/opt/aws/bin/cfn-init -v ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource MyPublicEC2Instance ",
+                  "         --configsets Install ",
+                  "         --region ", { "Ref" : "AWS::Region" },
+                  "\n",
+                  "# Signal the status from cfn-init\n",
+                  "/opt/aws/bin/cfn-signal -e $? ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource MyPublicEC2Instance ",
+                  "         --region ", { "Ref" : "AWS::Region" },
+                  "\n"
+                ]
+              ]
+            }
+        },
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": "true",
