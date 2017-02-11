@@ -86,6 +86,28 @@
         "VpcId" : { "Ref" : "MyVPC" }
       }
     },
+    "MyDatabaseSecurityGroup": {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "SecurityGroup for db-server instance in private-subnet",
+        "SecurityGroupIngress" : [
+          {
+           "IpProtocol" : "tcp",
+           "FromPort" : "22",
+           "ToPort" : "22",
+           "CidrIp" : "0.0.0.0/0"
+         },
+         {
+          "IpProtocol" : "tcp",
+          "FromPort" : "3306",
+          "ToPort" : "3306",
+          "CidrIp" : "0.0.0.0/0"
+         }
+        ],
+        "Tags" :  [ { "Key" : "Name", "Value" : "DB-SG" } ],
+        "VpcId" : { "Ref" : "MyVPC" }
+      }
+    },
     "MyPublicEC2Instance": {
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
