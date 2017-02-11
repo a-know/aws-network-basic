@@ -25,3 +25,7 @@
 ### Chapter.6 プライベートサブネットを構築する
 
 - [Chapter 6 : プライベートサブネットを構築する (#5)](https://github.com/a-know/aws-network-basic/pull/5)
+
+### Chapter.7 NATサーバーを構築する
+
+- [Chapter 7 : NATサーバーを構築する (#6)](https://github.com/a-know/aws-network-basic/pull/6)
