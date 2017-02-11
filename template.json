@@ -190,6 +190,37 @@
           }
         ]
       }
+    },
+    "MyPrivateEC2Instance": {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : "ami-4985b048",
+        "InstanceType" : "t2.nano",
+        "KeyName" : "macbook12",
+        "Tags" : [
+          { "Key" : "Name", "Value" : "DBサーバー" }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": "false",
+            "DeviceIndex": "0",
+            "DeleteOnTermination" : "true",
+            "PrivateIpAddress" : "10.0.2.10",
+            "SubnetId": { "Ref" : "MyPrivateSubnet" },
+            "GroupSet": [ { "Ref" : "MyDatabaseSecurityGroup" } ]
+          }
+        ],
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/xvda",
+            "Ebs" : {
+               "VolumeType" : "standard",
+               "DeleteOnTermination" : "true",
+               "VolumeSize" : "8"
+            }
+          }
+        ]
+      }
     }
   }
 }
