@@ -49,11 +49,25 @@
         "Tags" : [ { "Key" : "Name", "Value" : "パブリックルートテーブル" } ]
       }
     },
+    "MyPrivateRouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "MyVPC" },
+        "Tags" : [ { "Key" : "Name", "Value" : "プライベートルートテーブル" } ]
+      }
+    },
     "AttachPublicRouteTableToPublicSubnet" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
         "RouteTableId" : { "Ref" : "MyRouteTable" },
         "SubnetId" : { "Ref" : "MyPublicSubnet" }
+      }
+    },
+    "AttachPrivateRouteTableToPrivateSubnet" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyPrivateRouteTable" },
+        "SubnetId" : { "Ref" : "MyPrivateSubnet" }
       }
     },
     "MyRoute" : {
@@ -62,6 +76,14 @@
         "RouteTableId" : { "Ref" : "MyRouteTable" },
         "DestinationCidrBlock" : "0.0.0.0/0",
         "GatewayId" : { "Ref" : "MyIGW" }
+      }
+    },
+    "MyPrivateRoute" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "RouteTableId" : { "Ref" : "MyPrivateRouteTable" },
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "InstanceId" : { "Ref" : "MyNatEC2Instance" }
       }
     },
     "MyPublicSecurityGroup": {
