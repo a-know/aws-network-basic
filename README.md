@@ -29,3 +29,8 @@
 ### Chapter.7 NATサーバーを構築する
 
 - [Chapter 7 : NATサーバーを構築する (#6)](https://github.com/a-know/aws-network-basic/pull/6)
+
+
+### Chapter.8 DB を用いたブログシステムの構築
+
+- [Chapter 8 : DB を用いたブログシステムの構築 (#7)](https://github.com/a-know/aws-network-basic/pull/7)
