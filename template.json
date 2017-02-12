@@ -293,7 +293,7 @@
                   "Fn::Join" : [
                     "",
                     [
-                      "CREATE DATABASE ", "wordpress", "DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;\n",
+                      "CREATE DATABASE ", "wordpress", " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;\n",
                       "GRANT ALL ON ", "wordpress", ".* TO ",
                       "wordpress", "@'%' IDENTIFIED BY '", "wordpresspasswd", "';\n",
                       "flush privileges;\n"
