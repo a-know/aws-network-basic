@@ -197,7 +197,11 @@
           "Install" : {
             "packages" : {
               "yum" : {
-                "httpd" : []
+                "httpd"        : [],
+                "mysql"        : [],
+                "php"          : [],
+                "php-mysql"    : [],
+                "php-mbstring" : []
               }
             },
             "services" : {
