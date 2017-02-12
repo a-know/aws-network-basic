@@ -269,13 +269,136 @@
     },
     "MyPrivateEC2Instance": {
       "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "Comment1" : "Configure the bootstrap helpers to install the MySQL Server",
+
+        "AWS::CloudFormation::Init" : {
+          "configSets" : {
+            "InstallAndRun" : [ "Install", "Configure" ]
+          },
+
+          "Install" : {
+            "packages" : {
+              "yum" : {
+                "mysql-server" : []
+              }
+            },
+            "files" : {
+              "/tmp/setup.mysql" : {
+                "content" : {
+                  "Fn::Join" : [
+                    "",
+                    [
+                      "CREATE DATABASE ", "wordpress", "DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;\n",
+                      "GRANT ALL ON ", "wordpress", ".* TO ",
+                      "wordpress", "@'%' IDENTIFIED BY '", "wordpresspasswd", "';\n",
+                      "flush privileges;\n"
+                    ]
+                  ]
+                },
+                "mode"  : "000400",
+                "owner" : "root",
+                "group" : "root"
+              },
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : {
+                  "Fn::Join" : [
+                    "",
+                    [
+                      "[main]\n",
+                      "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                      "region=", { "Ref" : "AWS::Region" }, "\n"
+                    ]
+                  ]
+                },
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": {
+                  "Fn::Join" : [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.MyPrivateEC2Instance.Metadata.AWS::CloudFormation::Init\n",
+                      "action=/opt/aws/bin/cfn-init -v ",
+                      "         --stack ", { "Ref" : "AWS::StackName" },
+                      "         --resource MyPrivateEC2Instance ",
+                      "         --configsets InstallAndRun ",
+                      "         --region ", { "Ref" : "AWS::Region" }, "\n",
+                      "runas=root\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services" : {
+              "sysvinit" : {
+                "mysqld" : { "enabled" : "true", "ensureRunning" : "true" },
+                "cfn-hup" : {
+                  "enabled" : "true",
+                  "ensureRunning" : "true",
+                  "files" : [
+                    "/etc/cfn/cfn-hup.conf",
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            }
+          },
+          "Configure" : {
+            "commands" : {
+              "01_set_mysql_root_password" : {
+                "command" : { "Fn::Join" : ["", ["mysqladmin -u root password '", "p@ssw0rd", "'"]]},
+                "test" : { "Fn::Join" : ["", ["$(mysql ", "wordpress", " -u root --password='", "p@ssw0rd", "' >/dev/null 2>&1 </dev/null); (( $? != 0 ))"]]}
+              },
+              "02_create_database" : {
+                "command" : { "Fn::Join" : ["", ["mysql -u root --password='", "p@ssw0rd", "' < /tmp/setup.mysql"]]},
+                "test" : { "Fn::Join" : ["", ["$(mysql ", "wordpress", " -u root --password='", "p@ssw0rd", "' >/dev/null 2>&1 </dev/null); (( $? != 0 ))"]]}
+              }
+            }
+          }
+        }
+      },
+      "CreationPolicy" : {
+        "ResourceSignal" : {
+          "Timeout" : "PT10M"
+        }
+      },
       "Properties" : {
         "ImageId" : "ami-4985b048",
-        "InstanceType" : "t2.nano",
+        "InstanceType" : "t2.micro",
         "KeyName" : "macbook12",
         "Tags" : [
           { "Key" : "Name", "Value" : "DBサーバー" }
         ],
+        "UserData" : {
+          "Fn::Base64" :
+            { "Fn::Join" :
+              [
+                "",
+                [
+                  "#!/bin/bash -xe\n",
+                  "yum install -y aws-cfn-bootstrap\n",
+                  "# Install the files and packages from the metadata\n",
+                  "/opt/aws/bin/cfn-init -v ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource MyPrivateEC2Instance ",
+                  "         --configsets InstallAndRun ",
+                  "         --region ", { "Ref" : "AWS::Region" },
+                  "\n",
+                  "# Signal the status from cfn-init\n",
+                  "/opt/aws/bin/cfn-signal -e $? ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource MyPrivateEC2Instance ",
+                  "         --region ", { "Ref" : "AWS::Region" },
+                  "\n"
+                ]
+              ]
+            }
+        },
         "NetworkInterfaces": [
           {
             "AssociatePublicIpAddress": "false",
