@@ -456,6 +456,31 @@
           }
         ]
       }
+    },
+    "MyElasticLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Scheme": "internet-facing",
+        "SecurityGroups": [ { "Ref" : "MyPublicSecurityGroup" } ],
+        "LoadBalancerName" : "MyElasticLoadBalancer",
+        "Subnets" : [ { "Ref" : "MyPublicSubnet" } ],
+        "Instances" : [ { "Ref" : "MyPublicEC2Instance" } ],
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ELB" }
+        ],
+        "Listeners": [{
+          "LoadBalancerPort": "80",
+          "InstancePort": "80",
+          "Protocol": "HTTP"
+        }],
+        "HealthCheck": {
+          "Target": "HTTP:80/",
+          "HealthyThreshold": "3",
+          "UnhealthyThreshold": "5",
+          "Interval": "30",
+          "Timeout": "5"
+        }
+      }
     }
-  }
+  },
 }
