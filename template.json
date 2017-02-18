@@ -1,5 +1,18 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
+  "Mappings": {
+    "ELBLogger": {
+      "us-east-1":      { "AccountID": "127311923021" },
+      "us-west-2":      { "AccountID": "797873946194" },
+      "us-west-1":      { "AccountID": "027434742980" },
+      "eu-west-1":      { "AccountID": "156460612806" },
+      "ap-southeast-1": { "AccountID": "114774131450" },
+      "ap-southeast-2": { "AccountID": "783225319266" },
+      "ap-northeast-1": { "AccountID": "582318560864" },
+      "sa-east-1":      { "AccountID": "507241528517" },
+      "us-gov-west-1":  { "AccountID": "048591011584" }
+    }
+  },
   "Resources" : {
     "MyVPC" : {
       "Type" : "AWS::EC2::VPC",
@@ -455,6 +468,61 @@
             }
           }
         ]
+      }
+    },
+    "MyElasticLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Scheme": "internet-facing",
+        "SecurityGroups": [ { "Ref" : "MyPublicSecurityGroup" } ],
+        "LoadBalancerName" : "MyElasticLoadBalancer",
+        "Subnets" : [ { "Ref" : "MyPublicSubnet" } ],
+        "Instances" : [ { "Ref" : "MyPublicEC2Instance" } ],
+        "Tags" : [
+          { "Key" : "Name", "Value" : "ELB" }
+        ],
+        "Listeners": [{
+          "LoadBalancerPort": "80",
+          "InstancePort": "80",
+          "Protocol": "HTTP"
+        }],
+        "HealthCheck": {
+          "Target": "HTTP:80/",
+          "HealthyThreshold": "3",
+          "UnhealthyThreshold": "5",
+          "Interval": "30",
+          "Timeout": "5"
+        },
+        "AccessLoggingPolicy": {
+          "Enabled" : "true",
+          "S3BucketName" : { "Ref":"LogBucket" }
+        }
+      }
+    },
+    "LogBucket" : {
+      "Type" : "AWS::S3::Bucket",
+      "DeletionPolicy" : "Retain"
+    },
+    "LogBucketPolicy" : {
+      "Type" : "AWS::S3::BucketPolicy",
+      "Properties" : {
+        "Bucket" : { "Ref" : "LogBucket" },
+        "PolicyDocument" : {
+          "Id" : "LogBucketPolicy",
+          "Statement" : [
+            {
+              "Sid" : "WriteAccess",
+              "Action" : [ "s3:PutObject" ],
+              "Effect" : "Allow",
+              "Resource" : {
+                "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "LogBucket" } , "/AWSLogs/", { "Ref" : "AWS::AccountId" }, "/*" ] ]
+              },
+              "Principal" : {
+                "AWS" : { "Fn::FindInMap" : [ "ELBLogger", { "Ref": "AWS::Region" }, "AccountID" ] }
+              }
+            }
+          ]
+        }
       }
     }
   }
